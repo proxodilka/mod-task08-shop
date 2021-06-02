@@ -1,33 +1,28 @@
-set(header_path "${${PROJECT_NAME}_SOURCE_DIR}/include")
-set(header ${header_path}/task.h)
-set(src task.cpp)
 
+set(LIB_TARGET_NAME ${PROJECT_NAME})
 
+set(LIB_SRC task.cpp statistics.cpp)
+file(GLOB_RECURSE LIB_HEADERS "${${PROJECT_NAME}_SOURCE_DIR}/include/*.h")
 
-add_library(${PROJECT_NAME} SHARED
-  ${header}
-  ${src})
-target_include_directories(${PROJECT_NAME}
-  PUBLIC ${CMAKE_CURRENT_BINARY_DIR}
-         ${${PROJECT_NAME}_SOURCE_DIR}/include)
-target_link_libraries(${PROJECT_NAME}
-  pthread)
-  
-add_executable(${PROJECT_NAME}.info main.cpp)
-target_include_directories(${PROJECT_NAME}.info
-  PUBLIC ${CMAKE_CURRENT_BINARY_DIR}
-         ${${PROJECT_NAME}_SOURCE_DIR}/include)
-target_link_libraries(${PROJECT_NAME}.info
-  ${PROJECT_NAME})
+add_library(${LIB_TARGET_NAME} STATIC ${LIB_SRC} ${LIB_HEADERS})
+target_link_libraries(${LIB_TARGET_NAME} ThreadUtils)
+target_include_directories(
+  ${LIB_TARGET_NAME} PUBLIC
+  "${${PROJECT_NAME}_SOURCE_DIR}/include" ${THREAD_UTILS_INCLUDE})
 
+set(TARGET_NAME ${PROJECT_NAME}.info)
+file(GLOB_RECURSE SOURCE main.cpp)
 
-install(TARGETS ${PROJECT_NAME}
-		LIBRARY DESTINATION "${lib_dest}"
-    ARCHIVE DESTINATION "${lib_dest}"
-    COMPONENT library)
-install(TARGETS ${PROJECT_NAME}.info
-		RUNTIME DESTINATION "${tool_dest}"
-    COMPONENT library)
+add_executable(${TARGET_NAME} ${SOURCE})
+target_link_libraries(${TARGET_NAME} ${LIB_TARGET_NAME})
+target_include_directories(${TARGET_NAME} PUBLIC ${LIB_HEADERS})
 
+install(TARGETS ${TARGET_NAME}
+        RUNTIME DESTINATION "${tool_dest}"
+        COMPONENT library)
 
-install(FILES ${header} DESTINATION "${include_dest}")
+install(TARGETS ${LIB_TARGET_NAME}
+        LIBRARY DESTINATION "${lib_dest}"
+        ARCHIVE DESTINATION "${lib_dest}"
+        COMPONENT library)
+install(FILES ${LIB_HEADERS} DESTINATION "${include_dest}")
