@@ -52,13 +52,18 @@ void ShopEmulator::print_statistics() {
 }
 
 void ShopEmulator::clear_console() {
+    int status = 1;
 #if defined _WIN32
-    system("cls");
+    status = system("cls");
 #elif defined (__LINUX__) || defined(__gnu_linux__) || defined(__linux__)
-    system("clear");
+    status = system("clear");
 #elif defined (__APPLE__)
-    system("clear");
+    status = system("clear");
 #endif
+    if (status) {
+        // The console wasn't cleared, so just printing two new-line-separators instead.
+        std::cout << std::endl << std::endl;
+    }
 }
 
 void ShopEmulator::drawer(CancellationToken token) {
